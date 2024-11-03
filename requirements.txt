@@ -1,0 +1,6 @@
+jaclang~=0.7.24
+mtllm~=0.3.2
+jac-streamlit~=0.0.3
+openai~=1.42.0
+SpeechRecognition~=3.8.1
+PyAudio~=0.2.11
