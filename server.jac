@@ -1,8 +1,59 @@
-import:py from mtllm.llms {OpenAI}
 # import:jac from rag {rag_engine}
+import from mtllm.llms.base { BaseLLM }
 
-glob llm = OpenAI(model_name='gpt-4o-mini');
 # glob RagEngine:rag_engine = rag_engine();
+
+glob SYSTEM_PROMPT: str = "";
+glob NORMAL_SUFFIX: str = "";
+::py::
+
+class OpenAI(BaseLLM):
+    """Anthropic API client for MTLLM."""
+
+    MTLLM_METHOD_PROMPTS: dict[str, str] = {
+        "Normal": NORMAL_SUFFIX,
+        "Reason": "",
+        "Chain-of-Thoughts": "",
+        "ReAct": "",
+    }
+    MTLLM_SYSTEM_PROMPT = SYSTEM_PROMPT
+    # MTLLM_PROMPT = PROMPT_TEMPLATE
+
+    def __init__(
+        self,
+        verbose: bool = False,
+        max_tries: int = 10,
+        type_check: bool = False,
+        **kwargs: dict,
+    ) -> None:
+        """Initialize the Anthropic API client."""
+        import openai  # type: ignore
+
+        super().__init__(verbose, max_tries, type_check)
+        self.client = openai.OpenAI()
+        self.model_name = str(kwargs.get("model_name", "gpt-4o-mini"))
+        self.temperature = kwargs.get("temperature", 0.7)
+        self.max_tokens = kwargs.get("max_tokens", 1024)
+
+    def __infer__(self, meaning_in: str | list[dict], **kwargs: dict) -> str:
+        """Infer a response from the input meaning."""
+        if not isinstance(meaning_in, str):
+            assert self.model_name.startswith(
+                ("gpt-4o", "gpt-4-turbo")
+            ), f"Model {self.model_name} is not multimodal, use a multimodal model instead."
+        print(meaning_in)
+        messages = [{"role": "user", "content": meaning_in}]
+        output = self.client.chat.completions.create(
+            model=kwargs.get("model_name", self.model_name),
+            temperature=kwargs.get("temperature", self.temperature),
+            max_tokens=kwargs.get("max_tokens", self.max_tokens),
+            messages=messages,
+        )
+        return output.choices[0].message.content
+::py::
+
+
+glob llm = OpenAI(model_name="gpt-4o-mini");
 
 walker interact {
     has message: str;
@@ -107,7 +158,7 @@ node qa_chat :chat: {
             message:'current message': str,
             instructions: 'instructions': str,
             chat_history: 'chat history': list[dict],
-        ) -> 'response':str by llm();
+        ) -> 'response':str by llm(is_custom=True, raw_output=True);
 
         here.response = respond_with_llm(
             message=here.message,
