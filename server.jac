@@ -4,6 +4,13 @@ import from mtllm.llms.base { BaseLLM }
 # glob RagEngine:rag_engine = rag_engine();
 
 glob SYSTEM_PROMPT: str = "";
+glob PROMPT_TEMPLATE: str = """
+[Input Information]
+{inputs_information}
+
+[Action]
+{action}
+""";
 glob NORMAL_SUFFIX: str = "";
 ::py::
 
@@ -17,7 +24,7 @@ class OpenAI(BaseLLM):
         "ReAct": "",
     }
     MTLLM_SYSTEM_PROMPT = SYSTEM_PROMPT
-    # MTLLM_PROMPT = PROMPT_TEMPLATE
+    MTLLM_PROMPT = PROMPT_TEMPLATE
 
     def __init__(
         self,
@@ -53,7 +60,7 @@ class OpenAI(BaseLLM):
 ::py::
 
 
-glob llm = OpenAI(model_name="gpt-4o-mini");
+glob llm = OpenAI(model_name="gpt-4o");
 
 walker interact {
     has message: str;
@@ -153,7 +160,7 @@ node qa_chat :chat: {
 
     can respond with infer entry {
 
-        can 'You are a virtual assistant. Respond to the message following the instructions. Taking into consideration the previous chat_history.'
+        can 'You are a virtual assistant having a conversation with a user. Respond to the message following the instructions. Taking into consideration this is an ongoing conversation and the previous conversation are provided in chat_history.'
         respond_with_llm(
             message:'current message': str,
             instructions: 'instructions': str,
