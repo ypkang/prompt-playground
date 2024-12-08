@@ -134,8 +134,6 @@ can bootstrap_frontend (token:str = "") {
             # Display assistant response in chat message container
             with st.chat_message("assistant") {
                 # call walker
-                print(instructions);
-                print(st.session_state.instructions);
                 res = root spawn interact(message=utterance, instructions=st.session_state.instructions, session_id="123", chat_history=st.session_state.messages);
                 response = res.response;
 
