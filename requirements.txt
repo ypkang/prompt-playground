@@ -4,3 +4,5 @@ jac-streamlit~=0.0.3
 openai~=1.42.0
 SpeechRecognition~=3.8.1
 PyAudio~=0.2.11
+audio_recorder_streamlit
+streamlit_float
